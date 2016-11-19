@@ -72,9 +72,14 @@ while True:
     buttons = wii.state['buttons']
     if (buttons & cwiid.BTN_UP):
         # Forwards
-        time.sleep(button_delay)
-        pz.forward(50)
-        showFace(smileData, 255, 0, 0)
+        # stop all motors if too close to an object to prevent face plant
+        if sonar.getDistance() < 10:
+            pz.stop()
+            showFace(oooohData, 0, 255, 0)
+        else:
+            time.sleep(button_delay)
+            pz.forward(50)
+            showFace(smileData, 255, 0, 0)
     elif (buttons & cwiid.BTN_DOWN):
         time.sleep(button_delay)
         pz.reverse(50)
@@ -95,7 +100,5 @@ while True:
         time.sleep(button_delay)
         pz.stop()
         showFace(frownData, 0, 0, 255)
-    #stop all motors if too close to an object to prevent face plant
-    if sonar.getDistance() < 10:
-        pz.stop()
-        showFace(oooohData, 0, 255, 0)
+
+
