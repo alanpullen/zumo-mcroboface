@@ -1,10 +1,11 @@
 #!/usr/bin/python
 # based on Matt Hawkins' code http://www.raspberrypi-spy.co.uk/?p=1101
 # Re written by Ryan Walmsley & Further edited by Alan Pullen
+# Based on code from: https://www.cl.cam.ac.uk/projects/raspberrypi/tutorials/robot/wiimote/
 
 import cwiid
-from piconzero import piconzero as pz
-from piconzero import hcsr04 as sonar
+import piconzero as pz
+import hcsr04 as sonar
 import time
 
 numPixels = 17
@@ -13,7 +14,7 @@ smileData   = [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1]
 frownData   = [1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1]
 grimaceData = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1]
 oooohData   = [0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1]
-pairData    = [1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1]
+pairData    = [0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1]
 
 # Initialise the Picon Zero
 pz.init()
@@ -41,17 +42,28 @@ time.sleep(1)
 print 'Press 1 + 2 on your Wii Remote now ...'
 time.sleep(1)
 
-# Try to connect to the Wiimote & quit if not found
-try:
-    wii = cwiid.Wiimote()
-except RuntimeError:
-    print "Can't connect to Wiimote"
-    showFace(pairData, 255, 0, 0)#
-    time.sleep(1)
-    sonar.cleanup()
-    quit()
+wii = None
+i = 2
+# Try to connect to the Wiimote & quit if not found after several attempts
+while not wii:
+    try:
+        wii = cwiid.Wiimote()
+    except RuntimeError:
+        if i > 10:
+            print "Error: Could Not Connect to WiiMote"
+            showFace(pairData, 255, 0, 0)  #
+            time.sleep(1)
+            sonar.cleanup()
+            quit()
+            break
+        print "Trouble connecting to connect to Wiimote"
+        print "attempt " + str(i)
+        i += 1
+        showFace(pairData, 255, 0, 255)#
+        time.sleep(1)
 
 print 'Wiimote connected'
+wii.led = 1
 showFace(pairData, 0, 255, 0)
 wii.rpt_mode = cwiid.RPT_BTN
 time.sleep(1)
